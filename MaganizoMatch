@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maganizo Mash - Ethical Facemash</title>
+<style>
+body{background:#0f0f0f;color:white;font-family:Arial;padding:12px;text-align:center}
+.card{background:#1e1e1e;padding:20px;border-radius:18px;max-width:600px;margin:auto}
+.vs{display:flex;gap:10px;margin:15px 0}
+.thought{flex:1;background:#2a2a2a;padding:18px;border-radius:12px;cursor:pointer;border:2px solid #333}
+.thought:hover{border-color:#4a90e2;transform:scale(1.02)}
+.thought.win{border-color:#27ae60;background:#1a2a1a}
+.center{font-size:24px;font-weight:bold;color:#4a90e2;margin:10px}
+button{width:100%;padding:12px;background:#333;color:white;border:none;border-radius:8px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="card">
+<h2>Maganizo Mash ⚡ Ethical Facemash</h2>
+<p style="color:#aaa;font-size:13px">Sewerani: Iyi ndi yoona kwanbiri? (No people, only thoughts)</p>
+
+<div class="vs">
+<div id="a" class="thought" onclick="vote('a')"></div>
+<div class="center">VS</div>
+<div id="b" class="thought" onclick="vote('b')"></div>
+</div>
+
+<button onclick="next()">Next pair →</button>
+<p id="result" style="color:#27ae60;margin-top:12px"></p>
+<p style="font-size:11px;color:#666;margin-top:20px">Same mechanic as Facemash 2003, but ethical: We rank THOUGHTS, not PEOPLE. Private, offline.</p>
+</div>
+
+<script>
+var pairs=[
+["Nthawi zonse ndimalephera","Nthawi zina ndimalephera koma ndimaphunzira"],
+["Amaganiza kuti ndine wopusa","Sindidziwa zomwe akuganiza, ndifunse"],
+["Ndiyenera kukhala perfect","Ndingayesere kukhala bwino"],
+["Zawonongeka zonse","Zina zawonongeka koma zina zili bwino"],
+["Ndine wopanda ntchito","Ndinachita cholakwika lero, koma sindine wopanda ntchito"]
+];
+var i=0;
+function next(){
+ var p=pairs[i%pairs.length];
+ document.getElementById('a').innerText=p[0];
+ document.getElementById('b').innerText=p[1];
+ document.getElementById('a').className='thought';
+ document.getElementById('b').className='thought';
+ document.getElementById('result').innerText='';
+ i++;
+}
+function vote(which){
+ var correct = document.getElementById('b'); // B is always more balanced
+ if(which=='b'){
+   document.getElementById('b').className='thought win';
+   document.getElementById('result').innerText='✅ Zoona! Maganizo achiwiri ndi oona kwanbiri. Anthu amaphunzira choncho.';
+ } else {
+   document.getElementById('a').className='thought win';
+   document.getElementById('result').innerText='Hmm, ganiziraninso - kodi nthawi ZONSE? Nthawi zina mawu akuti nthawi zonse ndi mantha.';
+ }
+ setTimeout(next,1500);
+}
+next();
+</script>
+</body>
+</html>
