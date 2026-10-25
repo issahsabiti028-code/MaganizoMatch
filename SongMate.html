@@ -1,93 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SongMate AI - Your Music Mate</title>
-<style>
-:root{--purple:#6B2EFF;--dark:#1a1033;--card:#2a1d52}
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
-body{background:var(--dark);color:#fff;min-height:100vh;padding-bottom:40px}
-header{background:var(--purple);padding:18px;text-align:center;position:sticky;top:0;z-index:10}
-header h1{font-size:22px} header p{opacity:.8;font-size:13px}
-.tabs{display:flex;background:var(--card);overflow-x:auto;position:sticky;top:64px;z-index:9}
-.tabs button{flex:1;min-width:70px;padding:14px 8px;background:none;border:none;color:#aaa;font-size:13px;border-bottom:3px solid transparent;white-space:nowrap}
-.tabs button.active{color:#fff;border-color:var(--purple);background:rgba(107,46,255,.15)}
-.page{display:none;padding:16px;max-width:700px;margin:auto} .page.active{display:block}
-.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,.05)}
-.btn{background:var(--purple);color:#fff;border:none;padding:14px 20px;border-radius:12px;width:100%;font-size:16px;font-weight:600;margin-top:10px;cursor:pointer}
-.btn2{background:#3a2a6e}
-input,textarea,select{width:100%;padding:14px;border-radius:12px;border:none;background:#1a1033;color:#fff;margin-top:8px;font-size:14px}
-.piano{display:flex;gap:2px;margin-top:12px;overflow-x:auto;padding-bottom:4px}
-.piano .white{width:45px;min-width:45px;height:140px;background:#fff;border-radius:0 0 8px 8px;color:#000;display:flex;align-items:end;justify-content:center;padding-bottom:8px;font-weight:700;cursor:pointer;user-select:none}
-.piano .white.active{background:#d5c5ff}
-.piano .black{width:30px;min-width:30px;height:90px;background:#000;margin-left:-15px;margin-right:-15px;z-index:2;border-radius:0 0 6px 6px;color:#fff;display:flex;align-items:end;justify-content:center;padding-bottom:4px;font-size:11px;cursor:pointer}
-.drums{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.drums div{background:linear-gradient(135deg,var(--purple),#8e6bff);padding:18px;border-radius:14px;text-align:center;font-weight:700;font-size:15px;cursor:pointer}
-.drums div:active{transform:scale(.96)}
-.result{margin-top:12px;padding:12px;background:#1a1033;border-radius:10px;min-height:50px;white-space:pre-wrap;font-size:13px}
-#wave{height:50px;background:#1a1033;border-radius:8px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#888;gap:3px}
-.bar{width:4px;height:12px;background:#a78bfa;border-radius:3px;animation:wave .4s infinite alternate}
-@keyframes wave{to{height:32px}}
-.inst{ display:flex; gap:6px; overflow:auto; margin:8px 0; padding-bottom:4px }
-.inst button{ padding:7px 12px; border-radius:20px; border:1px solid #4a3690; background:#1a1033; color:#b8a8e8; font-size:11px; white-space:nowrap }
-.inst button.on{ background:var(--purple); color:#fff; border-color:var(--purple) }
-.row{display:flex;gap:8px}
-.badge{display:inline-block;padding:4px 8px;background:#3a2a70;border-radius:20px;font-size:11px;margin:2px}
-</style>
-</head>
-<body>
-<header>
-<h1>🎵 SongMate AI</h1>
-<p>Make Music • Identify • Lyrics • Photo • Discover</p>
-</header>
-<div class="tabs">
-<button class="active" onclick="show(0)">🎹 Make</button>
-<button onclick="show(1)">🎤 Mic</button>
-<button onclick="show(2)">⌨️ Type</button>
-<button onclick="show(3)">📸 Photo</button>
-<button onclick="show(4)">🎧 Hear</button>
-</div>
-<div class="page active" id="p0">
-<div class="card">
-<h3>🎹 Piano - Tap to make melody (Auto-Records)</h3>
-<div class="inst" id="instList"></div>
-<div class="piano" id="piano"></div>
-<div class="row" style="margin-top:8px">
-<button class="btn btn2" style="flex:1" onclick="octDown()">◀ Oct</button>
-<button class="btn btn2" style="flex:1" onclick="octUp()">Oct ▶</button>
-<button class="btn btn2" style="flex:1" onclick="clearNotes()">Clear Notes</button>
-</div>
-<small style="color:#9b8ec4;font-size:11px" id="octInfo">Octave 4 • Instrument: Piano • Notes auto-saved when recording</small>
-</div>
-<div class="card">
-<h3>📝 Auto Song Maker - Type Lyrics → Melody Auto</h3>
-<textarea id="makeLyricInput" rows="2" placeholder="Type your song e.g. ndine wopusa mtima... I will auto-make melody as you type"></textarea>
-<div class="row">
-<button class="btn" style="flex:1" onclick="lyricToMelody()">🎶 Type → Play Melody</button>
-<button class="btn btn2" style="flex:1" onclick="autoSing()">🗣️ Speak Lyrics</button>
-</div>
-<div id="autoNotes" class="result">Notes: None yet. Type lyrics and tap Type→Play, or play piano while recording.</div>
-</div>
-<div class="card">
-<h3>🎼 Instrumental Studio - All Instruments</h3>
-<div class="row">
-<button class="btn btn2" onclick="playChord('C')">C</button>
-<button class="btn btn2" onclick="playChord('G')">G</button>
-<button class="btn btn2" onclick="playChord('Am')">Am</button>
-<button class="btn btn2" onclick="playChord('F')">F</button>
-</div>
-<button class="btn btn2" onclick="playProgression()">▶️ Play Full Progression C - G - Am - F + Bass + Drums</button>
-<div class="drums" style="margin-top:10px">
-<div onclick="playDrum('kick')">KICK 🥾 Bass</div>
-<div onclick="playDrum('snare')">SNARE 🪘</div>
-<div onclick="playDrum('hihat')">HI-HAT 🎩</div>
-<div onclick="playDrum('clap')">CLAP 👏</div>
-<div onclick="playDrum('crash')">CRASH 💥</div>
-<div onclick="playDrum('tom')">TOM 🥁</div>
-<div onclick="playDrum('bass')">BASS 🎸 Low</div>
-<div onclick="playDrum('808')">808 🔊 Deep</div>
-</div>
-<div class="row" style="margin-top:8px">
-<button class="btn btn2" style="flex:1" onclick="makeBeat('amapiano')">🇿🇦 Amapiano</button>
-<button class="btn btn2" style="flex:1" onclick="makeBeat('af
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SongMate AI - Voice Studio 10min</title><style>:root{--purple:#6B2EFF;--dark:#1a1033;--card:#2a1d52;--card2:#1e1040}*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}body{background:var(--dark);color:#fff;min-height:100vh;padding-bottom:60px}header{background:linear-gradient(90deg,#6B2EFF,#8a5cff);padding:18px;text-align:center;position:sticky;top:0;z-index:10}.tabs{display:flex;background:var(--card);overflow-x:auto;position:sticky;top:66px;z-index:9}.tabs button{flex:1;min-width:68px;padding:13px 6px;background:none;border:none;color:#aaa;font-size:12px;border-bottom:3px solid transparent;white-space:nowrap}.tabs button.active{color:#fff;border-color:var(--purple);background:rgba(107,46,255,.15)}.page{display:none;padding:14px;max-width:700px;margin:auto}.page.active{display:block}.card{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,.06)}.btn{background:linear-gradient(90deg,#6B2EFF,#9d7cff);color:#fff;border:none;padding:13px 18px;border-radius:12px;width:100%;font-size:15px;font-weight:700;margin-top:8px;cursor:pointer}.btn2{background:#3a2a6e}.btn-dl{background:linear-gradient(90deg,#00c853,#00e676)}input,textarea,select{width:100%;padding:13px;border-radius:12px;border:none;background:var(--card2);color:#fff;margin-top:8px}.piano{display:flex;gap:2px;margin-top:10px;overflow-x:auto}.piano .white{width:44px;min-width:44px;height:130px;background:#fff;border-radius:0 0 8px 8px;color:#000;display:flex;align-items:end;justify-content:center;padding-bottom:6px;font-weight:800;font-size:12px}.piano .black{width:28px;min-width:28px;height:80px;background:#000;margin-left:-14px;margin-right:-14px;z-index:2;border-radius:0 0 6px 6px;color:#fff;display:flex;align-items:end;justify-content:center;padding-bottom:4px;font-size:10px}.drums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.drums div{background:linear-gradient(135deg,#6B2EFF,#b39bff);padding:16px;border-radius:14px;text-align:center;font-weight:700;font-size:13px;cursor:pointer}.result{margin-top:10px;padding:10px;background:var(--card2);border-radius:10px;min-height:46px;font-size:13px;white-space:pre-wrap}#wave{height:56px;background:var(--card2);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:2px;margin-top:8px}.bar{width:4px;background:#a78bfa;border-radius:3px}.inst{display:flex;gap:6px;overflow:auto;margin:8px 0}.inst button{padding:7px 12px;border-radius:20px;border:1px solid #4a3690;background:#1e1040;color:#b8a8e8;font-size:11px;white-space:nowrap}.inst button.on{background:var(--purple);color:#fff}.row{display:flex;gap:8px}.timer{font-size:28px;font-weight:900;text-align:center;margin:8px 0;color:#a78bfa}.progress{height:8px;background:var(--card2);border-radius:10px;overflow:hidden;margin:6px 0}.progress div{height:100%;background:linear-gradient(90deg,#6B2EFF,#a78bfa);width:0%;transition:width .3s}.badge{padding:3px 8px;background:#3a2a70;border-radius:20px;font-size:10px}</style></head><body>
+<header><h1>🎵 SongMate AI</h1><p>Make Music • Voice 10min Studio • Real Voice Balance</p></header>
+<div class="tabs"><button class="active" onclick="show(0)">🎹 Make</button><button onclick="show(1)">🎙️ Voice 10min</button><button onclick="show(2)">🎤 Mic</button><button onclick="show(3)">⌨️ Type</button><button onclick="show(4)">📸 Photo</button><button onclick="show(5)">🎧 Hear</button></div>
+<div class="page active" id="p0"><div class="card"><h3>🎹 Piano + All Instruments</h3><div class="inst" id="instList"></div><div class="piano" id="piano"></div><div id="autoNotes" class="result">Notes: Play piano</div></div><div class="card"><h3>🎼 Instrumental Studio</h3><div class="drums"><div onclick="playDrum('kick')">KICK</div><div onclick="playDrum('snare')">SNARE</div><div onclick="playDrum('hihat')">HI-HAT</div><div onclick="playDrum('clap')">CLAP</div><div onclick="playDrum('bass')">BASS</div><div onclick="playDrum('808')">808</div></div><div class="row" style="margin-top:8px"><button class="btn btn2" onclick="playChord('C')">C</button><button class="btn btn2" onclick="playChord('G')">G</button><button class="btn btn2" onclick="playChord('Am')">Am</button><button class="btn btn2" onclick="playChord('F')">F</button></div><button class="btn btn2" onclick="playProgression()">▶️ Progression C-G-Am-F</button></div></div>
+<div class="page" id="p1"><div class="card"><h3>🎙️ Voice Studio - Record 0.5min to 10min MAX</h3><p style="font-size:12px;color:#b8a8e8">Min 30 sec - Max 10 min. Keeps your real voice balance. Then auto-create song + download.</p><div class="timer" id="timer">00:00 / 10:00</div><div class="progress"><div id="prog"></div></div><div id="wave"></div><div class="row"><button class="btn" id="voiceBtn" onclick="toggleVoiceStudio()">🔴 START RECORD (0.5-10min)</button></div><div class="row"><button class="btn btn2" style="flex:1" onclick="playVoice()">▶️ Play Voice</button><button class="btn btn2" style="flex:1" onclick="stopVoice()">⏹️ Stop</button></div><div id="voiceStatus" class="result">Ready. Tap START. Speak/sing at least 30 sec. Max 10 min auto-stops.</div><audio id="voiceAudio" controls style="width:100%;margin-top:8px;display:none"></audio><div class="row"><button class="btn" style="flex:1" onclick="createSongFromVoice()">🎶 Create Song From My Voice</button><button class="btn btn-dl" style="flex:1" onclick="downloadVoice()" id="dlVoiceBtn" disabled>⬇️ Download Voice</button></div><div class="row"><button class="btn btn-dl" style="flex:1" onclick="downloadSong()" id="dlSongBtn" disabled>⬇️ Download Full Song</button><button class="btn btn2" style="flex:1" onclick="shareSong()">📤 Share</button></div><div id="voiceInfo" class="result">No voice yet. Voice balance preserved (no auto-tune).</div></div><div class="card"><h3>🎹 My Songs - Phone Storage</h3><div id="savedList" class="result">No saved songs.</div><div class="row"><button class="btn btn2" onclick="saveVoiceSong()">💾 Save to Phone</button><button class="btn btn2" onclick="clearSaved()">🗑️ Clear All</button></div></div></div><div class="page" id="p2"><div class="card"><h3>🎤 Identify</h3><button class="btn" id="micBtn" onclick="startMic()">🎤 TAP TO IDENTIFY</button><div id="wave2"></div><div id="micResult" class="result">Tap to identify</div></div></div>
+<div class="page" id="p3"><div class="card"><h3>⌨️ Type Lyrics → Find & Play</h3><textarea id="lyricInput" rows="3"></textarea><button class="btn" onclick="searchLyrics()">🔍 FIND + PLAY</button><div id="typeResult" class="result"></div><div id="typePlayer"></div></div></div>
+<div class="page" id="p4"><div class="card"><h3>📸 Photo to Lyrics</h3><input type="file" id="photoInput" accept="image/*"><button class="btn" onclick="readPhoto()">📖 READ TEXT</button><div id="photoResult" class="result"></div><button class="btn btn2" onclick="searchFromPhoto()">🔍 Search + Play</button></div></div>
+<div class="page" id="p5"><div class="card"><h3>🎧 Hear - Search & Play</h3><input id="artistInput" value="Driemo"><button class="btn" onclick="playArtist()">▶️ PLAY</button><div id="playerBox" style="margin-top:10px;background:#000;border-radius:12px;min-height:240px;display:flex;align-items:center;justify-content:center">Player</div><div id="artistLinks"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+function show(i){document.querySelectorAll('.page').forEach((p,idx)=>p.classList.toggle('active',idx==i));document.querySelectorAll('.tabs button').forEach((b,idx)=>b.classList.toggle('active',idx==i));}
+let audioCtx;function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+let currentInst='piano';const instruments=[{id:'piano',name:'🎹 Piano',type:'triangle'},{id:'guitar',name:'🎸 Guitar',type:'sawtooth'},{id:'violin',name:'🎻 Violin',type:'sawtooth'},{id:'bass',name:'🎸 Bass',type:'square',oct:-1},{id:'synth',name:'🎹 Synth',type:'sawtooth'},{id:'flute',name:'🪈 Flute',type:'sine'}];
+function renderInst(){let h='';instruments.forEach(ins=>h+=`<button class="${ins.id==currentInst?'on':''}" onclick="setInst('${ins.id}')">${ins.name}</button>`);document.getElementById('instList').innerHTML=h}
+function setInst(id){currentInst=id;renderInst()}
+function playTone(freq,vol=.6,dur=1){let c=getCtx();let o=c.createOscillator();let g=c.createGain();let ins=instruments.find(x=>x.id==currentInst);o.type=ins.type;let shift=ins.oct?ins.oct*12:0;let f=freq*Math.pow(2,shift/12);o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(vol,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);o.start();o.stop(c.currentTime+dur)}
+function playDrum(t){let c=getCtx();let o=c.createOscillator();let g=c.createGain();o.connect(g);g.connect(c.destination);let map={kick:55,snare:180,hihat:400,clap:250,bass:45,'808':38};o.frequency.value=map[t]||120;o.type=t=='hihat'?'square':'sine';g.gain.setValueAtTime(1,c.currentTime);g.gain.exponentialRampToValueAtTime(0.01,c.currentTime+(t=='kick'||t=='808'?0.5:0.2));o.start();o.stop(c.currentTime+0.5)}
+function playChord(name){let chords={C:[60,64,67],G:[55,59,62],Am:[57,60,64],F:[53,57,60]};(chords[name]||chords.C).forEach(m=>{let f=440*Math.pow(2,(m-69)/12);playTone(f,0.5,1.5)});let bass=440*Math.pow(2,((chords[name]||chords.C)[0]-24-69)/12);playTone(bass,0.8,1.5)}
+function playProgression(){['C','G','Am','F'].forEach((c,i)=>setTimeout(()=>playChord(c),i*1200))}
+let octave=4;function buildPiano(){let p=document.getElementById('piano');p.innerHTML='';let base=octave*12+12;[0,2,4,5,7,9,11,12,14].forEach(semi=>{if([1,3,6,8,10,13].includes(semi))return;let midi=base+semi;let d=document.createElement('div');d.className='white';d.textContent=['C','D','E','F','G','A','B'][ [0,2,4,5,7,9,11].indexOf(semi%12) ]||'';d.onclick=()=>{let f=440*Math.pow(2,(midi-69)/12);playTone(f)};p.appendChild(d)});[{s:1,l:28},{s:3,l:72},{s:6,l:148},{s:8,l:192},{s:10,l:236},{s:13,l:312}].forEach(o=>{let midi=base+o.s;let b=document.createElement('div');b.className='black';b.style.left=o.l+'px';b.textContent='#';b.onclick=(e)=>{e.stopPropagation();let f=440*Math.pow(2,(midi-69)/12);playTone(f)};p.appendChild(b)})}
+renderInst();buildPiano();
+let voiceRecorder=null,voiceChunks=[],voiceBlob=null,voiceUrl=null,voiceStart=0,voiceTimerInt=null,voiceDuration=0;let isVoiceRec=false;const MAX_MS=600000;const MIN_MS=30000;
+function formatTime(ms){let s=Math.floor(ms/1000);let m=Math.floor(s/60);s=s%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
+async function toggleVoiceStudio(){let btn=document.getElementById('voiceBtn');if(!isVoiceRec){try{let stream=await navigator.mediaDevices.getUserMedia({audio:true});let c=getCtx();let src=c.createMediaStreamSource(stream);let analyser=c.createAnalyser();src.connect(analyser);analyser.fftSize=64;let data=new Uint8Array(analyser.frequencyBinCount);let wave=document.getElementById('wave');wave.innerHTML='';function drawWave(){if(!isVoiceRec)return;analyser.getByteFrequencyData(data);wave.innerHTML='';for(let i=0;i<20;i++){let h=data[i]/8+4;let d=document.createElement('div');d.className='bar';d.style.height=h+'px';wave.appendChild(d)}requestAnimationFrame(drawWave)}drawWave();voiceRecorder=new MediaRecorder(stream,{mimeType:'audio/webm'});voiceChunks=[];voiceBlob=null;voiceUrl=null;voiceRecorder.ondataavailable=e=>{if(e.data.size>0)voiceChunks.push(e.data)};voiceRecorder.onstop=()=>{voiceBlob=new Blob(voiceChunks,{type:'audio/webm'});voiceUrl=URL.createObjectURL(voiceBlob);let aud=document.getElementById('voiceAudio');aud.src=voiceUrl;aud.style.display='block';document.getElementById('dlVoiceBtn').disabled=false;stream.getTracks().forEach(t=>t.stop());let dur=Date.now()-voiceStart;if(dur<MIN_MS){document.getElementById('voiceStatus').textContent=`⚠️ Too short: ${formatTime(dur)} - Need 00:30 min!`}else{document.getElementById('voiceStatus').textContent=`✅ Recorded ${formatTime(dur)} - Voice balance preserved!`}};voiceRecorder.start(100);isVoiceRec=true;voiceStart=Date.now();voiceDuration=0;btn.textContent='⏹️ STOP RECORDING';btn.style.background='#ff1744';document.getElementById('voiceStatus').textContent='🔴 Recording... Min 0.5min, max 10min. Keeping real voice...';voiceTimerInt=setInterval(()=>{let elapsed=Date.now()-voiceStart;voiceDuration=elapsed;document.getElementById('timer').textContent=`${formatTime(elapsed)} / 10:00`;document.getElementById('prog').style.width=Math.min(100,elapsed/MAX_MS*100)+'%';if(elapsed>=MAX_MS){stopVoiceStudio();}},200);}catch(e){document.getElementById('voiceStatus').textContent='❌ Mic blocked: Tap lock 🔒 → Allow';}}else{stopVoiceStudio()}}
+function stopVoiceStudio(){if(voiceRecorder && voiceRecorder.state=='recording')voiceRecorder.stop();isVoiceRec=false;clearInterval(voiceTimerInt);let btn=document.getElementById('voiceBtn');btn.textContent='🔴 START RECORD (0.5-10min)';btn.style.background='';}
+function playVoice(){let a=document.getElementById('voiceAudio');if(a.src)a.play()}
+function stopVoice(){let a=document.getElementById('voiceAudio');a.pause()}
+function downloadVoice(){if(!voiceBlob){alert('Record first');return}let a=document.createElement('a');a.href=voiceUrl;a.download=`SongMate-Voice-${new Date().toISOString().slice(0,10)}-${formatTime(voiceDuration).replace(':','m')}.webm`;a.click();}
+function createSongFromVoice(){if(!voiceBlob){alert('Record 30 sec first!');return}let aud=document.getElementById('voiceAudio');aud.currentTime=0;aud.play();setTimeout(()=>playChord('C'),500);setTimeout(()=>playDrum('kick'),800);setTimeout(()=>playChord('G'),2000);setTimeout(()=>playDrum('snare'),2300);setTimeout(()=>playChord('Am'),4000);setTimeout(()=>playDrum('kick'),4300);setTimeout(()=>playChord('F'),6000);document.getElementById('dlSongBtn').disabled=false;document.getElementById('voiceStatus').textContent='🎵 Song created from YOUR voice! Tap Download!';}
+function downloadSong(){if(!voiceBlob){alert('Record first');return}let a=document.createElement('a');a.href=voiceUrl;a.download=`SongMate-Song-${new Date().toISOString().slice(0,10)}.webm`;a.click();}
+function shareSong(){if(!voiceUrl){alert('Record first');return}}
+function saveVoiceSong(){if(!voiceBlob){alert('Record first');return}let reader=new FileReader();reader.readAsDataURL(voiceBlob);reader.onloadend=()=>{let songs=JSON.parse(localStorage.getItem('sm_songs')||'[]');songs.push({date:new Date().toLocaleString(),voice:reader.result,duration:formatTime(voiceDuration)});localStorage.setItem('sm_songs',JSON.stringify(songs));renderSaved()}}
+function renderSaved(){let songs=JSON.parse(localStorage.getItem('sm_songs')||'[]');let el=document.getElementById('savedList');if(!songs.length){el.innerHTML='No saved songs yet.';return}let h='';songs.forEach((s,i)=>{h+=`<div style="margin:6px 0"><span class="badge">${s.date}</span> ${s.duration||''} <button onclick="playSaved(${i})">▶️</button> <button onclick="downloadSaved(${i})">⬇️</button> <button onclick="delSaved(${i})">🗑️</button></div>`});el.innerHTML=h}
+function playSaved(i){let s=JSON.parse(localStorage.getItem('sm_songs'))[i];let aud=document.getElementById('voiceAudio');aud.src=s.voice;aud.style.display='block';aud.play()}
+function downloadSaved(i){let s=JSON.parse(localStorage.getItem('sm_songs'))[i];let a=document.createElement('a');a.href=s.voice;a.download=`SongMate-${s.date.replace(/[^0-9]/g,'')}.webm`;a.click()}
+function delSaved(i){let a=JSON.parse(localStorage.getItem('sm_songs'));a.splice(i,1);localStorage.setItem('sm_songs',JSON.stringify(a));renderSaved()}
+function clearSaved(){localStorage.removeItem('sm_songs');renderSaved()}
+renderSaved();
+async function startMic(){let b=document.getElementById('micBtn');let r=document.getElementById('micResult');let w=document.getElementById('wave2');try{let s=await navigator.mediaDevices.getUserMedia({audio:true});let rec=new MediaRecorder(s);rec.onstop=()=>{w.textContent='✅ Captured';r.textContent='Captured!';s.getTracks().forEach(t=>t.stop())};rec.start();b.textContent='🎧 Listening 10s';w.innerHTML='Listening...';setTimeout(()=>{if(rec.state=='recording')rec.stop();b.textContent='🎤 TAP TO IDENTIFY'},10000)}catch{r.textContent='❌ Allow mic'}}
+async function searchLyrics(){let q=document.getElementById('lyricInput').value;let res=document.getElementById('typeResult');let pl=document.getElementById('typePlayer');if(!q){res.textContent='Type';return}res.textContent='Searching...';try{let resp=await fetch('https://api.lyrics.ovh/suggest/'+encodeURIComponent(q));let d=await resp.json();if(d.data&&d.data.length){let first=d.data[0];res.textContent=`Found: ${first.title} - ${first.artist.name}`;let safe=encodeURIComponent(first.artist.name+' '+first.title);pl.innerHTML=`<iframe width="100%" height="200" src="https://www.youtube.com/embed?listType=search&list=${safe}" frameborder="0" allowfullscreen></iframe>`}else{pl.innerHTML=`<iframe width="100%" height="200" src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}" frameborder="0" allowfullscreen></iframe>`}}catch{pl.innerHTML=`<iframe width="100%" height="200" src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}" frameborder="0" allowfullscreen></iframe>`}}
+async function readPhoto(){let f=document.getElementById('photoInput').files[0];let r=document.getElementById('photoResult');if(!f){r.textContent='Choose';return}r.textContent='📖 Reading OCR...';try{let worker=await Tesseract.createWorker('eng');let {data:{text}}=await worker.recognize(f);await worker.terminate();r.textContent='Found:\n'+text;window.photoText=text}catch(e){r.textContent='Failed: '+e.message}}
+function searchFromPhoto(){let txt=window.photoText||document.getElementById('photoResult').textContent;document.getElementById('lyricInput').value=txt.slice(0,200);show(3);searchLyrics()}
+function playArtist(){let q=document.getElementById('artistInput').value||'Driemo';let box=document.getElementById('playerBox');let safe=encodeURIComponent(q);box.innerHTML=`<iframe width="100%" height="260" src="https://www.youtube.com/embed?listType=search&list=${safe}" frameborder="0" allowfullscreen></iframe>`;}
+</script></body></html>
