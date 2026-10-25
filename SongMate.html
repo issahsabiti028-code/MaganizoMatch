@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SongMate AI - Your Music Mate</title>
+<style>
+:root{--purple:#6B2EFF;--dark:#1a1033;--card:#2a1d52}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:var(--dark);color:#fff;min-height:100vh;padding-bottom:40px}
+header{background:var(--purple);padding:18px;text-align:center;position:sticky;top:0;z-index:10}
+header h1{font-size:22px} header p{opacity:.8;font-size:13px}
+.tabs{display:flex;background:var(--card);overflow-x:auto;position:sticky;top:64px;z-index:9}
+.tabs button{flex:1;min-width:70px;padding:14px 8px;background:none;border:none;color:#aaa;font-size:13px;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.active{color:#fff;border-color:var(--purple);background:rgba(107,46,255,.15)}
+.page{display:none;padding:16px;max-width:700px;margin:auto} .page.active{display:block}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,.05)}
+.btn{background:var(--purple);color:#fff;border:none;padding:14px 20px;border-radius:12px;width:100%;font-size:16px;font-weight:600;margin-top:10px;cursor:pointer}
+.btn2{background:#3a2a6e}
+input,textarea,select{width:100%;padding:14px;border-radius:12px;border:none;background:#1a1033;color:#fff;margin-top:8px;font-size:14px}
+.piano{display:flex;gap:2px;margin-top:12px;overflow-x:auto;padding-bottom:4px}
+.piano .white{width:45px;min-width:45px;height:140px;background:#fff;border-radius:0 0 8px 8px;color:#000;display:flex;align-items:end;justify-content:center;padding-bottom:8px;font-weight:700;cursor:pointer;user-select:none}
+.piano .white.active{background:#d5c5ff}
+.piano .black{width:30px;min-width:30px;height:90px;background:#000;margin-left:-15px;margin-right:-15px;z-index:2;border-radius:0 0 6px 6px;color:#fff;display:flex;align-items:end;justify-content:center;padding-bottom:4px;font-size:11px;cursor:pointer}
+.drums{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.drums div{background:linear-gradient(135deg,var(--purple),#8e6bff);padding:18px;border-radius:14px;text-align:center;font-weight:700;font-size:15px;cursor:pointer}
+.drums div:active{transform:scale(.96)}
+.result{margin-top:12px;padding:12px;background:#1a1033;border-radius:10px;min-height:50px;white-space:pre-wrap;font-size:13px}
+#wave{height:50px;background:#1a1033;border-radius:8px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#888;gap:3px}
+.bar{width:4px;height:12px;background:#a78bfa;border-radius:3px;animation:wave .4s infinite alternate}
+@keyframes wave{to{height:32px}}
+.inst{ display:flex; gap:6px; overflow:auto; margin:8px 0; padding-bottom:4px }
+.inst button{ padding:7px 12px; border-radius:20px; border:1px solid #4a3690; background:#1a1033; color:#b8a8e8; font-size:11px; white-space:nowrap }
+.inst button.on{ background:var(--purple); color:#fff; border-color:var(--purple) }
+.row{display:flex;gap:8px}
+.badge{display:inline-block;padding:4px 8px;background:#3a2a70;border-radius:20px;font-size:11px;margin:2px}
+</style>
+</head>
+<body>
+<header>
+<h1>🎵 SongMate AI</h1>
+<p>Make Music • Identify • Lyrics • Photo • Discover</p>
+</header>
+<div class="tabs">
+<button class="active" onclick="show(0)">🎹 Make</button>
+<button onclick="show(1)">🎤 Mic</button>
+<button onclick="show(2)">⌨️ Type</button>
+<button onclick="show(3)">📸 Photo</button>
+<button onclick="show(4)">🎧 Hear</button>
+</div>
+<div class="page active" id="p0">
+<div class="card">
+<h3>🎹 Piano - Tap to make melody (Auto-Records)</h3>
+<div class="inst" id="instList"></div>
+<div class="piano" id="piano"></div>
+<div class="row" style="margin-top:8px">
+<button class="btn btn2" style="flex:1" onclick="octDown()">◀ Oct</button>
+<button class="btn btn2" style="flex:1" onclick="octUp()">Oct ▶</button>
+<button class="btn btn2" style="flex:1" onclick="clearNotes()">Clear Notes</button>
+</div>
+<small style="color:#9b8ec4;font-size:11px" id="octInfo">Octave 4 • Instrument: Piano • Notes auto-saved when recording</small>
+</div>
+<div class="card">
+<h3>📝 Auto Song Maker - Type Lyrics → Melody Auto</h3>
+<textarea id="makeLyricInput" rows="2" placeholder="Type your song e.g. ndine wopusa mtima... I will auto-make melody as you type"></textarea>
+<div class="row">
+<button class="btn" style="flex:1" onclick="lyricToMelody()">🎶 Type → Play Melody</button>
+<button class="btn btn2" style="flex:1" onclick="autoSing()">🗣️ Speak Lyrics</button>
+</div>
+<div id="autoNotes" class="result">Notes: None yet. Type lyrics and tap Type→Play, or play piano while recording.</div>
+</div>
+<div class="card">
+<h3>🎼 Instrumental Studio - All Instruments</h3>
+<div class="row">
+<button class="btn btn2" onclick="playChord('C')">C</button>
+<button class="btn btn2" onclick="playChord('G')">G</button>
+<button class="btn btn2" onclick="playChord('Am')">Am</button>
+<button class="btn btn2" onclick="playChord('F')">F</button>
+</div>
+<button class="btn btn2" onclick="playProgression()">▶️ Play Full Progression C - G - Am - F + Bass + Drums</button>
+<div class="drums" style="margin-top:10px">
+<div onclick="playDrum('kick')">KICK 🥾 Bass</div>
+<div onclick="playDrum('snare')">SNARE 🪘</div>
+<div onclick="playDrum('hihat')">HI-HAT 🎩</div>
+<div onclick="playDrum('clap')">CLAP 👏</div>
+<div onclick="playDrum('crash')">CRASH 💥</div>
+<div onclick="playDrum('tom')">TOM 🥁</div>
+<div onclick="playDrum('bass')">BASS 🎸 Low</div>
+<div onclick="playDrum('808')">808 🔊 Deep</div>
+</div>
+<div class="row" style="margin-top:8px">
+<button class="btn btn2" style="flex:1" onclick="makeBeat('amapiano')">🇿🇦 Amapiano</button>
+<button class="btn btn2" style="flex:1" onclick="makeBeat('af
