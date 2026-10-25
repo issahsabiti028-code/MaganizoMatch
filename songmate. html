@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SongMate AI - Your Music Mate</title>
+<style>
+:root{--purple:#6B2EFF;--dark:#1a1033;--card:#2a1d52}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+body{background:var(--dark);color:#fff;min-height:100vh}
+header{background:var(--purple);padding:18px;text-align:center;position:sticky;top:0;z-index:10}
+header h1{font-size:22px} header p{opacity:.8;font-size:13px}
+.tabs{display:flex;background:var(--card);overflow-x:auto}
+.tabs button{flex:1;min-width:70px;padding:14px 8px;background:none;border:none;color:#aaa;font-size:13px;border-bottom:3px solid transparent}
+.tabs button.active{color:#fff;border-color:var(--purple);background:rgba(107,46,255,.15)}
+.page{display:none;padding:16px;max-width:600px;margin:auto} .page.active{display:block}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:16px}
+.btn{background:var(--purple);color:#fff;border:none;padding:14px 20px;border-radius:12px;width:100%;font-size:16px;font-weight:600;margin-top:10px}
+input,textarea{width:100%;padding:14px;border-radius:12px;border:none;background:#1a1033;color:#fff;margin-top:8px}
+.piano{display:flex;gap:2px;margin-top:12px;overflow-x:auto}
+.piano .white{width:45px;height:140px;background:#fff;border-radius:0 0 8px 8px;color:#000;display:flex;align-items:end;justify-content:center;padding-bottom:8px;font-weight:700}
+.piano .black{width:30px;height:90px;background:#000;margin-left:-15px;margin-right:-15px;z-index:2;border-radius:0 0 6px 6px;color:#fff;display:flex;align-items:end;justify-content:center;padding-bottom:4px;font-size:11px}
+.drums{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.drums div{background:linear-gradient(135deg,var(--purple),#8e6bff);padding:24px;border-radius:14px;text-align:center;font-weight:700;font-size:18px}
+.result{margin-top:12px;padding:12px;background:#1a1033;border-radius:10px;min-height:50px;white-space:pre-wrap}
+#wave{height:50px;background:#1a1033;border-radius:8px;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#888}
+</style>
+</head>
+<body>
+<header>
+<h1>🎵 SongMate AI</h1>
+<p>Make Music • Identify • Lyrics • Photo • Discover</p>
+</header>
+
+<div class="tabs">
+<button class="active" onclick="show(0)">🎹 Make</button>
+<button onclick="show(1)">🎤 Mic</button>
+<button onclick="show(2)">⌨️ Type</button>
+<button onclick="show(3)">📸 Photo</button>
+<button onclick="show(4)">🎧 Hear</button>
+</div>
+
+<div class="page active" id="p0">
+<div class="card">
+<h3>🎹 Piano - Tap to make melody</h3>
+<div class="piano" id="piano"></div>
+</div>
+<div class="card">
+<h3>🥁 Drum Pad</h3>
+<div class="drums">
+<div onclick="playDrum('kick')">KICK 🥾</div>
+<div onclick="playDrum('snare')">SNARE 🪘</div>
+<div onclick="playDrum('hihat')">HI-HAT 🎩</div>
+<div onclick="playDrum('clap')">CLAP 👏</div>
+</div>
+</div>
+<div class="card">
+<h3>🎙️ Record Your Song</h3>
+<button class="btn" id="recMakeBtn" onclick="toggleMakeRec()">🔴 Start Recording</button>
+<div id="makeStatus" class="result">Ready to record...</div>
+<audio id="makeAudio" controls style="width:100%;margin-top:10px;display:none"></audio>
+</div>
+</div>
+
+<div class="page" id="p1">
+<div class="card">
+<h3>🎤 Identify Any Song</h3>
+<button class="btn" id="micBtn" onclick="startMic()">🎤 TAP TO IDENTIFY</button>
+<div id="wave">Waveform will show here</div>
+<div id="micResult" class="result">Result will appear here...</div>
+</div>
+</div>
+
+<div class="page" id="p2">
+<div class="card">
+<h3>⌨️ Type Lyrics to Find Song</h3>
+<textarea id="lyricInput" rows="3" placeholder="Type lyrics... e.g. ndine wopusa"></textarea>
+<button class="btn" onclick="searchLyrics()">🔍 FIND SONG</button>
+<div id="typeResult" class="result">Search results...</div>
+</div>
+</div>
+
+<div class="page" id="p3">
+<div class="card">
+<h3>📸 Photo to Lyrics</h3>
+<input type="file" id="photoInput" accept="image/*" capture="environment">
+<button class="btn" onclick="readPhoto()">📖 READ TEXT FROM PHOTO</button>
+<div id="photoResult" class="result">Photo text will appear...</div>
+<button class="btn" style="background:#333" onclick="searchFromPhoto()">🔍 Search Song From Photo</button>
+</div>
+</div>
+
+<div class="page" id="p4">
+<div class="card">
+<h3>🎧 Hear Other Artists</h3>
+<input id="artistInput" placeholder="Search artist: Tay Grin, Driemo">
+<button class="btn" onclick="playArtist()">▶️ PLAY</button>
+<div id="playerBox" class="result" style="padding:0;overflow:hidden;height:260px">Player...</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+function show(i){
+ document.querySelectorAll('.page').forEach((p,idx)=>p.classList.toggle('active', idx===i));
+ document.querySelectorAll('.tabs button').forEach((b,idx)=>b.classList.toggle('active', idx===i));
+}
+const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+function playTone(freq){
+ const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+ o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+ g.gain.setValueAtTime(.6, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+1);
+ o.start(); o.stop(audioCtx.currentTime+1);
+}
+function playDrum(t){ const f={kick:60,snare:180,hihat:300,clap:200}[t]; playTone(f); }
+let pianoDiv=document.getElementById('piano');
+['C','D','E','F','G','A','B'].forEach((n,i)=>{
+ let d=document.createElement('div'); d.className='white'; d.textContent=n;
+ d.onclick=()=>playTone(220+i*30); pianoDiv.appendChild(d);
+ if(n!='E' && n!='B'){ let b=document.createElement('div'); b.className='black'; b.textContent=n+'#'; b.onclick=()=>playTone(235+i*30); pianoDiv.appendChild(b);}
+});
+let makeRecorder, makeChunks=[];
+async function toggleMakeRec(){
+ let btn=document.getElementById('recMakeBtn');
+ if(makeRecorder && makeRecorder.state==='recording'){ makeRecorder.stop(); btn.textContent='🔴 Start Recording'; return; }
+ let stream=await navigator.mediaDevices.getUserMedia({audio:true});
+ makeRecorder=new MediaRecorder(stream); makeChunks=[];
+ makeRecorder.ondataavailable=e=>makeChunks.push(e.data);
+ makeRecorder.onstop=()=>{
+   let blob=new Blob(makeChunks,{type:'audio/webm'}); let url=URL.createObjectURL(blob);
+   let a=document.getElementById('makeAudio'); a.src=url; a.style.display='block';
+   document.getElementById('makeStatus').textContent='✅ Saved! Play below!';
+ };
+ makeRecorder.start(); btn.textContent='⏹️ Stop Recording';
+ document.getElementById('makeStatus').textContent='🔴 Recording...';
+}
+let micRec, micChunks;
+async function startMic(){
+ let btn=document.getElementById('micBtn'); let res=document.getElementById('micResult');
+ try{
+   let s=await navigator.mediaDevices.getUserMedia({audio:true});
+   micRec=new MediaRecorder(s); micChunks=[];
+   micRec.ondataavailable=e=>micChunks.push(e.data);
+   micRec.onstop=()=>{ res.textContent='✅ Audio captured! Now search lyrics in Type tab. Real Shazam needs AudD API key (free).'; btn.textContent='🎤 TAP TO IDENTIFY'; btn.disabled=false; };
+   micRec.start(); btn.textContent='🎧 Listening... 10s'; btn.disabled=true;
+   document.getElementById('wave').textContent='🔊 ●●● Listening ●●●';
+   setTimeout(()=>{ if(micRec.state==='recording') micRec.stop(); },10000);
+ }catch(e){ res.textContent='❌ Allow mic permission.'; }
+}
+async function searchLyrics(){
+ let q=document.getElementById('lyricInput').value.trim(); let r=document.getElementById('typeResult');
+ if(!q){ r.textContent='Type something first'; return; }
+ r.textContent='Searching...';
+ try{
+   let resp=await fetch('https://api.lyrics.ovh/suggest/'+encodeURIComponent(q));
+   let data=await resp.json();
+   if(data.data && data.data.length){
+     let s=data.data.slice(0,5).map((t,i)=> `${i+1}. ${t.title} - ${t.artist.name}`).join('\n\n');
+     r.textContent='Found:\n\n'+s;
+   } else r.textContent='No result.';
+ }catch{ r.textContent='Try searching in Hear tab.'; }
+}
+let photoText='';
+async function readPhoto(){
+ let f=document.getElementById('photoInput').files[0]; let r=document.getElementById('photoResult');
+ if(!f){ r.textContent='Choose photo first'; return; }
+ r.textContent='📖 Reading...';
+ try{
+   let {data:{text}} = await Tesseract.recognize(f,'eng');
+   photoText=text; r.textContent='Text found:\n\n'+text;
+ }catch(e){ r.textContent='Failed.'; }
+}
+function searchFromPhoto(){
+ if(!photoText){ return; }
+ document.getElementById('lyricInput').value=photoText.slice(0,200);
+ show(2); searchLyrics();
+}
+function playArtist(){
+ let q=document.getElementById('artistInput').value.trim() || 'Malawian music';
+ let box=document.getElementById('playerBox');
+ box.innerHTML=`<iframe width="100%" height="260" src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}" frameborder="0" allowfullscreen></iframe>`;
+}
+</script>
+</body>
+</html>
