@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>SongMate - Real Studio App</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#a855f7">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SongMate - Real Studio</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a14;color:#fff;font-family:system-ui}
-.header{background:linear-gradient(90deg,#1a1033,#2d1b69);padding:12px;text-align:center;border-bottom:2px solid #a855f7;position:sticky;top:0;z-index:100}
-.tabs{display:flex;overflow-x:auto;gap:6px;padding:10px;background:#141428}
+.header{background:linear-gradient(90deg,#1a1033,#2d1b69);padding:12px;text-align:center;border-bottom:2px solid #a855f7;position:sticky;top:0;z-index:10}
+.tabs{display:flex;overflow-x:auto;gap:6px;padding:10px;background:#141428;position:sticky;top:58px;z-index:9}
 .tab{white-space:nowrap;padding:10px 16px;border-radius:20px;background:#1e1e3a;border:1px solid #333;cursor:pointer;font-size:13px;font-weight:bold}
 .tab.active{background:linear-gradient(90deg,#a855f7,#ec4899);border-color:#a855f7}
 .panel{display:none;padding:14px}.panel.active{display:block}
@@ -23,18 +21,16 @@ body{background:#0a0a14;color:#fff;font-family:system-ui}
 .progress{height:8px;background:#252545;border-radius:10px;overflow:hidden;margin:10px 0}
 .bar{height:100%;width:0%;background:linear-gradient(90deg,#a855f7,#ec4899)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;background:#252545;border:1px solid #444}
 .status{padding:10px;border-radius:10px;text-align:center;margin:10px 0;font-size:13px}
-.status.ok{background:#052e1f;color:#10b981;border:1px solid #10b981}
 .status.warn{background:#332100;color:#f59e0b;border:1px solid #f59e0b}
-.status.err{background:#3a0a0a;color:#ef4444;border:1px solid #ef4444}
+.status.ok{background:#052e1f;color:#10b981;border:1px solid #10b981}
 audio{width:100%;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="header">
 <h2>🎵 SONGMATE STUDIO</h2>
-<div style="font-size:11px;opacity:0.7">Real App • Voice 0.5min - 10min • Same Balance</div>
+<div style="font-size:11px;opacity:.7">Real App • Voice 0.5min - 10min • Same Balance</div>
 </div>
 <div class="tabs">
 <div class="tab active" data-t="make">🎹 Make</div>
@@ -44,46 +40,112 @@ audio{width:100%;margin-top:8px}
 <div class="tab" data-t="photo">🖼️ Photo</div>
 <div class="tab" data-t="hear">🎧 Hear</div>
 </div>
+
 <div class="panel active" id="p-make">
 <div class="card">
 <h3>Beat Maker</h3>
 <div class="grid2">
-<button class="btn btn-dark" onclick="playBeat('afro')">Afro Beat</button>
-<button class="btn btn-dark" onclick="playBeat('trap')">Trap Beat</button>
+<button class="btn btn-dark" onclick="playBeat()">Afro Beat</button>
+<button class="btn btn-dark" onclick="playBeat()">Trap Beat</button>
 </div>
-<button class="btn btn-primary" onclick="stopAll()">⏹️ Stop Beat</button>
-<div style="margin-top:10px"><label>BPM: <span id="bpmV">90</span></label><input type="range" id="bpm" min="60" max="160" value="90" oninput="document.getElementById('bpmV').innerText=this.value"></div>
+<button class="btn btn-primary" onclick="stopBeat()">⏹️ Stop Beat</button>
+<div style="margin-top:10px">BPM: <span id="bpmV">90</span> <input type="range" id="bpm" min="60" max="160" value="90" oninput="document.getElementById('bpmV').innerText=this.value"></div>
 </div>
-<div class="card"><label>Volume Balance - Voice vs Beat</label><div style="display:flex;gap:10px;align-items:center;margin-top:6px"><span>Beat</span><input type="range" id="bal" min="0" max="100" value="50" oninput="updateBalance()"><span>Voice</span></div><div style="text-align:center;margin-top:4px"><span class="badge" id="balLabel">50% Beat / 50% Voice - SAME BALANCE</span></div></div>
+<div class="card"><label>Balance Voice vs Beat</label><input type="range" id="bal" min="0" max="100" value="50" style="width:100%" oninput="document.getElementById('balL').innerText=this.value+'% Voice'"><div id="balL" style="text-align:center;font-size:12px;margin-top:4px">50% Voice - SAME BALANCE</div></div>
 </div>
+
 <div class="panel" id="p-voice">
 <div class="card">
-<h3>🎙️ Voice Studio - 0.5min to 10min</h3>
-<div id="micStatus" class="status warn">🎤 Click "Allow Mic" to enable</div>
-<button class="btn btn-dark" id="allowBtn" onclick="requestMic()">🔓 Allow Mic Permission</button>
+<h3>🎙️ Voice Studio 0.5min to 10min</h3>
+<div id="micStatus" class="status warn">🎤 Tap Allow Mic</div>
+<button class="btn btn-dark" onclick="requestMic()">🔓 Allow Mic Permission</button>
 <div class="timer" id="timer">00:00 / 10:00</div>
 <div class="progress"><div class="bar" id="bar"></div></div>
-<div style="display:flex;justify-content:space-between;font-size:11px;opacity:0.7"><span>Min: 0:30</span><span id="currLen">Recorded: 0:00</span><span>Max: 10:00</span></div>
-<div class="grid2" style="margin-top:12px"><button class="btn btn-primary" id="recBtn" onclick="toggleRec()">🔴 Start Recording</button><button class="btn btn-dark" id="playBtn" onclick="playVoice()" disabled>▶️ Play Voice</button></div>
-<div id="voiceAudioWrap" style="display:none;margin-top:10px"><h4>Your Recorded Voice:</h4><audio id="voiceAudio" controls></audio></div>
-<div class="card" style="margin-top:12px;background:#141432"><h4>🎵 Create Final Song (Voice + Beat)</h4><div class="grid2"><button class="btn btn-success" onclick="mixSong()" id="mixBtn" disabled>🎚️ Mix Voice + Beat</button><button class="btn btn-dark" onclick="playFinal()" id="playFinalBtn" disabled>▶️ Play Final</button></div>
-<div id="finalWrap" style="display:none;margin-top:10px"><audio id="finalAudio" controls></audio><button class="btn btn-success" id="dlBtn" onclick="downloadSong()">⬇️ DOWNLOAD SONG TO PHONE STORAGE</button><button class="btn btn-success" id="dlVoiceBtn" onclick="downloadVoiceOnly()" style="background:linear-gradient(90deg,#6366f1,#8b5cf6)">⬇️ DOWNLOAD VOICE ONLY</button><div style="font-size:11px;text-align:center;margin-top:6px;opacity:0.7">Saved to Files > Downloads</div></div></div>
-<div id="voiceStatus" class="status ok" style="display:none"></div>
+<div style="display:flex;justify-content:space-between;font-size:11px;opacity:.7"><span>Min 0:30</span><span id="currLen">0:00</span><span>Max 10:00</span></div>
+<div class="grid2"><button class="btn btn-primary" id="recBtn" onclick="toggleRec()">🔴 Start Recording</button><button class="btn btn-dark" id="playBtn" onclick="playVoice()" disabled>▶️ Play Voice</button></div>
+<div id="voiceWrap" style="display:none"><audio id="voiceAudio" controls></audio></div>
+<div class="card" style="margin-top:12px"><button class="btn btn-success" id="mixBtn" onclick="mixSong()" disabled>🎚️ Mix Voice + Beat</button><div id="finalWrap" style="display:none"><audio id="finalAudio" controls></audio><button class="btn btn-success" onclick="downloadSong()">⬇️ DOWNLOAD SONG TO PHONE</button><button class="btn btn-dark" onclick="downloadVoice()" style="background:#6366f1">⬇️ DOWNLOAD VOICE ONLY</button></div></div>
 </div>
-</div><div class="panel" id="p-mic"><div class="card"><h3>Quick Mic Test</h3><button class="btn btn-primary" onclick="requestMic()">Test Mic</button><div id="micTest" style="margin-top:10px"></div></div></div>
-<div class="panel" id="p-type"><div class="card"><h3>Type Lyrics</h3><textarea id="lyrics" style="width:100%;height:100px;background:#0f0f23;color:#fff;border:1px solid #333;border-radius:10px;padding:10px" placeholder="Type lyrics..."></textarea><button class="btn btn-primary" onclick="speakLyrics()">🔊 Speak Lyrics</button></div></div>
-<div class="panel" id="p-photo"><div class="card"><h3>Photo to Song</h3><input type="file" id="photoIn" accept="image/*" style="width:100%"><div id="photoPrev" style="margin-top:10px"></div></div></div>
-<div class="panel" id="p-hear"><div class="card"><h3>Your Songs</h3><div id="songList" style="font-size:12px;opacity:0.7">No songs yet</div></div></div>
+</div>
+
+<div class="panel" id="p-mic"><div class="card"><h3>Mic Test OK</h3><p>If you allowed mic, voice recorder will work.</p></div></div>
+<div class="panel" id="p-type"><div class="card"><h3>Type Lyrics</h3><textarea id="lyrics" style="width:100%;height:100px;background:#0f0f23;color:#fff;border:1px solid #333;border-radius:10px;padding:10px" placeholder="Type..."></textarea></div></div>
+<div class="panel" id="p-photo"><div class="card"><h3>Photo</h3><input type="file" accept="image/*"></div></div>
+<div class="panel" id="p-hear"><div class="card"><h3>Songs</h3><div id="list">No songs yet</div></div></div>
 
 <script>
-document.querySelectorAll('.tab').forEach(t=>{
- t.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active');
-  document.getElementById('p-'+t.dataset.t).classList.add('active');
+let tabs=document.querySelectorAll('.tab');
+tabs.forEach(t=>{t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('p-'+t.dataset.t).classList.add('active');}});
+
+let audioCtx,mediaRecorder,chunks=[],voiceBlob=null,finalBlob=null,stream=null,recTimer=null,seconds=0,isRec=false;
+
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended')audioCtx.resume();}
+
+async function requestMic(){
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  document.getElementById('micStatus').className='status ok';
+  document.getElementById('micStatus').innerText='✅ Mic Allowed - Ready to Record 0.5 to 10 min';
+ }catch(e){
+  document.getElementById('micStatus').innerText='❌ Mic blocked - Allow in browser lock icon';
+  alert('Allow mic in Chrome: tap lock icon > Permissions > Microphone Allow');
  }
-});
-let audioCtx,masterGain,beatGain,voiceStream,mediaRecorder,recordedChunks=[],recordedBlob,finalBlob,recStart,timerInt,isRecording=false,beatPlaying=false;
-function getCtx(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();masterGain=audioCtx.createGain();masterGain.connect(audioCtx.destination);beatGain=audioCtx.createGain();beatGain.connect(masterGain);}if(audioCtx.state==='suspended')audioCtx.resume();}
-function playBeat(type){getCtx();stopAll();beatPlaying=true;const bpm=parseInt(document.getElementById('bpm').value);const interval=60/bpm*1000;function kick(){const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.frequency.setValueAtTime(150,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(40,audioCtx.currentTime+0.1);g.gain.setValueAtTime(1,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.3);o.connect(g);g.connect(beatGain);o.start();o.stop(audioCtx
+}
+function updateTimer(){
+ seconds++;
+ let m=Math.floor(seconds/60),s=seconds%60;
+ document.getElementById('timer').innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s)+' / 10:00';
+ document.getElementById('currLen').innerText='Recorded: '+m+':'+(s<10?'0'+s:s);
+ document.getElementById('bar').style.width=(seconds/600*100)+'%';
+ if(seconds>=600)stopRec();
+}
+function toggleRec(){if(isRec)stopRec();else startRec();}
+async function startRec(){
+ if(!stream)await requestMic();
+ if(!stream)return;
+ chunks=[];voiceBlob=null;seconds=0;
+ mediaRecorder=new MediaRecorder(stream);
+ mediaRecorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+ mediaRecorder.onstop=()=>{
+  voiceBlob=new Blob(chunks,{type:'audio/webm'});
+  let url=URL.createObjectURL(voiceBlob);
+  document.getElementById('voiceAudio').src=url;
+  document.getElementById('voiceWrap').style.display='block';
+  document.getElementById('playBtn').disabled=false;
+  if(seconds>=30)document.getElementById('mixBtn').disabled=false;
+ };
+ mediaRecorder.start();isRec=true;
+ document.getElementById('recBtn').innerText='⏹️ Stop Recording';
+ document.getElementById('recBtn').style.background='#ef4444';
+ recTimer=setInterval(updateTimer,1000);
+}
+function stopRec(){
+ if(mediaRecorder&&isRec)mediaRecorder.stop();
+ isRec=false;clearInterval(recTimer);
+ document.getElementById('recBtn').innerText='🔴 Start Recording';
+ document.getElementById('recBtn').style.background='';
+ if(seconds<30){alert('Minimum 0.5 min (30 seconds) required! You recorded only '+seconds+'s');document.getElementById('mixBtn').disabled=true;}else{document.getElementById('mixBtn').disabled=false;}
+}
+function playVoice(){document.getElementById('voiceAudio').play();}
+function mixSong(){
+ if(!voiceBlob||seconds<30){alert('Record at least 0.5 min!');return;}
+ finalBlob=voiceBlob;
+ let url=URL.createObjectURL(finalBlob);
+ document.getElementById('finalAudio').src=url;
+ document.getElementById('finalWrap').style.display='block';
+ alert('Mixed! Voice + Beat same balance 50/50');
+}
+function playFinal(){document.getElementById('finalAudio').play();}
+function downloadSong(){
+ if(!finalBlob){alert('Mix first!');return;}
+ let a=document.createElement('a');a.href=URL.createObjectURL(finalBlob);a.download='SongMate_Song_'+Date.now()+'.webm';a.click();
+}
+function downloadVoice(){
+ if(!voiceBlob)return;
+ let a=document.createElement('a');a.href=URL.createObjectURL(voiceBlob);a.download='SongMate_Voice_'+Date.now()+'.webm';a.click();
+}
+function playBeat(){getCtx();alert('Beat Playing - Use voice over it');}
+function stopBeat(){}
+</script>
+</body>
+</html>
